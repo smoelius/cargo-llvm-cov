@@ -1000,6 +1000,12 @@ impl Format {
         cmd.args(self.use_color(cx));
         cmd.arg(format!("-instr-profile={}", cx.ws.profdata_file));
         cmd.args(object_files.iter().flat_map(|f| [OsStr::new("-object"), f]));
+        cmd.args([
+            &format!("-Xdemangler={}", cx.current_exe.display()),
+            "-Xdemangler=llvm-cov",
+            "-Xdemangler=demangle",
+        ]);
+
         if let Some(ignore_filename_regex) = ignore_filename_regex {
             cmd.arg("-ignore-filename-regex");
             cmd.arg(ignore_filename_regex);
@@ -1021,11 +1027,6 @@ impl Format {
                     // -show-mcdc requires LLVM 18+
                     cmd.arg("-show-mcdc");
                 }
-                cmd.args([
-                    &format!("-Xdemangler={}", cx.current_exe.display()),
-                    "-Xdemangler=llvm-cov",
-                    "-Xdemangler=demangle",
-                ]);
                 if let Some(output_dir) = &cx.args.cov.output_dir {
                     if self == Self::Html {
                         cmd.arg(format!("-output-dir={}", output_dir.join("html")));
